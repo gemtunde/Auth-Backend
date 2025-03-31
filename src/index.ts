@@ -8,8 +8,10 @@ import { errorHandler } from "./middlewares/errorHandler";
 import { HTTPSTATUS } from "./config/http.config";
 import { asyncHandler } from "./middlewares/asyncHandler";
 import { BadRequestException } from "./common/utils/catch-errors";
+import authRoutes from "./modules/auth/auth.routes";
 
 const app = express();
+const BASE_PATH = config.BASE_PATH;
 
 // Middleware
 app.use(express.json());
@@ -26,14 +28,16 @@ app.use(cookieParser());
 app.get(
   "/",
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    throw new BadRequestException("Bad Test error");
+    // throw new BadRequestException("Bad Test error");
     res.status(HTTPSTATUS.OK).json({
       message: "Welcome to the API",
     });
   })
 );
 
-//error handling middleware
+//routes
+
+app.use(`${BASE_PATH}/auth`, authRoutes);
 
 app.use(errorHandler);
 // Start server
