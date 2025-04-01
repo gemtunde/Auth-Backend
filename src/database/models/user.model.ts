@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema } from "mongoose";
+import { compareValue, hashValue } from "../../common/utils/bcrypt";
 
 interface UserPreference {
   enable2FA: boolean;
@@ -42,9 +43,14 @@ const userSchema = new Schema<UserDocument>(
 userSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
     // Hash password logic here
-    this.password = await hashPassword(this.password);
+    this.password = await hashValue(this.password);
+    next();
   }
 });
+
+userSchema.methods.comparePassword = async function (value: string) {
+  return compareValue(value, this.password);
+};
 
 userSchema.set("toJSON", {
   transform: function (doc, ret) {
