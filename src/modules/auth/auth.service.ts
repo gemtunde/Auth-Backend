@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { ErrorCode } from "../../common/enums/error-code.enum";
-import { VerificationEnum } from "../../common/enums/veerification-code.enum";
+import { VerificationEnum } from "../../common/enums/verification-code.enum";
 import { LoginDto, RegisterDto } from "../../common/interface/auth.interface";
 import {
   BadRequestException,
@@ -41,17 +41,17 @@ export class AuthService {
       email,
       password,
     });
-    // const userId = newUser._id;
+    const userId = newUser._id;
 
     //send verification code
-    // const verificationCode = await Verification.create({
-    //   userId,
-    //   type: VerificationEnum.EMAIL_VERIFICATION,
-    //   expiredAt: fortyFiveMinutesFromNow(),
-    // });
-    //send email to user with verification code
+    const verificationCode = await Verification.create({
+      userId,
+      type: VerificationEnum.EMAIL_VERIFICATION,
+      expiresAt: fortyFiveMinutesFromNow(),
+    });
+    // send email to user with verification code
 
-    //  console.log("User registered:", data);
+    console.log("User registered:", verificationCode);
     return {
       user: newUser,
       // message: "User registered successfully"
@@ -149,6 +149,41 @@ export class AuthService {
     return {
       accessToken,
       newRefreshToken,
+    };
+  }
+
+  public async verifyEmail(code: string) {
+    const validCode = await Verification.findOne({
+      code: code,
+      type: VerificationEnum.EMAIL_VERIFICATION,
+      expiresAt: { $gt: new Date() },
+    });
+
+    if (!validCode) {
+      throw new BadRequestException(
+        "Invalid or expired verification code"
+        // ErrorCode.AUTH_INVALID_VERIFICATION_CODE
+      );
+    }
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      validCode.userId,
+      {
+        isEmailVerified: true,
+      },
+      { new: true }
+    );
+    if (!updatedUser) {
+      throw new BadRequestException(
+        "User not found",
+        ErrorCode.VERIFICATION_ERROR
+      );
+    }
+    // Delete the verification code after successful verification
+    await Verification.deleteOne({ _id: validCode._id });
+
+    // send success response
+    return {
+      user: updatedUser,
     };
   }
 }
