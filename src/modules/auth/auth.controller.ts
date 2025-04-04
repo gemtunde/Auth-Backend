@@ -15,7 +15,10 @@ import {
   getAccessTokenCookieOptions,
   setAuthenticationCookies,
 } from "../../common/utils/cookies";
-import { UnauthorizedException } from "../../common/utils/catch-errors";
+import {
+  NotFoundException,
+  UnauthorizedException,
+} from "../../common/utils/catch-errors";
 
 export class AuthController {
   private authService: AuthService;
@@ -111,6 +114,18 @@ export class AuthController {
       await this.authService.resetPassword(body);
       return clearAuthenticationCookies(res).status(HTTPSTATUS.OK).json({
         message: "Password reset successfully",
+      });
+    }
+  );
+  public logout = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      const sessionId = req.sessionId;
+      if (!sessionId) {
+        throw new NotFoundException("Session not found");
+      }
+      await this.authService.logout(sessionId);
+      return clearAuthenticationCookies(res).status(HTTPSTATUS.OK).json({
+        message: "User logout successfully",
       });
     }
   );

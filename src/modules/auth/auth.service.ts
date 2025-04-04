@@ -283,4 +283,11 @@ export class AuthService {
       user: updatedUser,
     };
   }
+  public async logout(sessionId: string) {
+    const session = await Session.findById(sessionId);
+    if (!session) {
+      throw new NotFoundException("Session not found");
+    }
+    return await session.deleteOne();
+  }
 }
