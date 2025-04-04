@@ -10,6 +10,8 @@ import { asyncHandler } from "./middlewares/asyncHandler";
 import { BadRequestException } from "./common/utils/catch-errors";
 import authRoutes from "./modules/auth/auth.routes";
 import passport from "./middlewares/passport";
+import sessionRoute from "./modules/session/session.route";
+import { authenticateJWT } from "./common/strategies/jwt.strategy";
 
 const app = express();
 const BASE_PATH = config.BASE_PATH;
@@ -40,6 +42,9 @@ app.get(
 //routes
 
 app.use(`${BASE_PATH}/auth`, authRoutes);
+
+//session routes
+app.use(`${BASE_PATH}/session`, authenticateJWT, sessionRoute);
 
 app.use(errorHandler);
 // Start server
