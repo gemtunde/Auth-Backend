@@ -3,6 +3,8 @@ import { HTTPSTATUS } from "../../config/http.config";
 import { asyncHandler } from "../../middlewares/asyncHandler";
 import { AuthService } from "./auth.service";
 import {
+  emailSchema,
+  forgotPasswordSchema,
   loginSchema,
   registerSchema,
   verificationEmailSchema,
@@ -90,6 +92,27 @@ export class AuthController {
       return res.status(HTTPSTATUS.OK).json({
         message: "Email verified successfully",
       });
+    }
+  );
+  public forgotPassword = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      const { email } = forgotPasswordSchema.parse(req.body);
+      await this.authService.forgotPassword(email);
+      res.status(HTTPSTATUS.OK).json({
+        message: "Password reset link sent successfully",
+      });
+
+      // return setAuthenticationCookies({
+      //   res,
+      //   refreshToken,
+      //   accessToken,
+      // })
+      //   .status(HTTPSTATUS.OK)
+      //   .json({
+      //     message: "User login successfully",
+      //     mfaRequired,
+      //     loginUser,
+      //   });
     }
   );
 }

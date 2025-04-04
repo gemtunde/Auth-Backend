@@ -6,5 +6,6 @@ authRoutes.post("/register", authController.register);
 authRoutes.post("/login", authController.login);
 authRoutes.post("/verify/email", authController.verifyEmail);
 authRoutes.get("/refresh", authController.refreshToken);
+authRoutes.post("/password/forgot", authController.forgotPassword);
 
 export default authRoutes;
