@@ -1,7 +1,11 @@
 import jwt from "jsonwebtoken";
 import { ErrorCode } from "../../common/enums/error-code.enum";
 import { VerificationEnum } from "../../common/enums/verification-code.enum";
-import { LoginDto, RegisterDto } from "../../common/interface/auth.interface";
+import {
+  LoginDto,
+  RegisterDto,
+  resetPasswordDto,
+} from "../../common/interface/auth.interface";
 import {
   BadRequestException,
   HttpException,
@@ -32,6 +36,7 @@ import {
 } from "../../mailers/templates/templates";
 import { sendEmail } from "../../mailers/mailer";
 import { HTTPSTATUS } from "../../config/http.config";
+import { hashValue } from "../../common/utils/bcrypt";
 
 export class AuthService {
   public async register(registerData: RegisterDto) {
@@ -241,5 +246,41 @@ export class AuthService {
       to: user.email,
       ...passwordResetTemplate(verificationUrl),
     });
+  }
+
+  public async resetPassword({ password, verificationCode }: resetPasswordDto) {
+    const validCode = await Verification.findOne({
+      code: verificationCode,
+      type: VerificationEnum.PASSWORD_RESET,
+      expiresAt: { $gt: new Date() },
+    });
+
+    if (!validCode) {
+      throw new NotFoundException("Invalid or expired verification code");
+    }
+    const hashedPassword = await hashValue(password);
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      validCode.userId,
+      {
+        password: hashedPassword,
+      },
+      { new: true }
+    );
+    if (!updatedUser) {
+      throw new BadRequestException(
+        "User not found",
+        ErrorCode.VERIFICATION_ERROR
+      );
+    }
+    // Delete the verification code after successful verification
+    await Verification.deleteOne({ _id: validCode._id });
+
+    await Session.deleteMany({
+      userId: updatedUser._id,
+    });
+    // send success response
+    return {
+      user: updatedUser,
+    };
   }
 }

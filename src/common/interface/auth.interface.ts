@@ -9,3 +9,7 @@ export interface LoginDto {
   password: string;
   userAgent?: string;
 }
+export interface resetPasswordDto {
+  verificationCode: string;
+  password: string;
+}

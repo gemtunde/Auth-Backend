@@ -7,9 +7,11 @@ import {
   forgotPasswordSchema,
   loginSchema,
   registerSchema,
+  resetPasswordSchema,
   verificationEmailSchema,
 } from "../../common/validators/auth.validator";
 import {
+  clearAuthenticationCookies,
   getAccessTokenCookieOptions,
   setAuthenticationCookies,
 } from "../../common/utils/cookies";
@@ -101,18 +103,15 @@ export class AuthController {
       res.status(HTTPSTATUS.OK).json({
         message: "Password reset link sent successfully",
       });
-
-      // return setAuthenticationCookies({
-      //   res,
-      //   refreshToken,
-      //   accessToken,
-      // })
-      //   .status(HTTPSTATUS.OK)
-      //   .json({
-      //     message: "User login successfully",
-      //     mfaRequired,
-      //     loginUser,
-      //   });
+    }
+  );
+  public resetPassword = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      const body = resetPasswordSchema.parse(req.body);
+      await this.authService.resetPassword(body);
+      return clearAuthenticationCookies(res).status(HTTPSTATUS.OK).json({
+        message: "Password reset successfully",
+      });
     }
   );
 }
