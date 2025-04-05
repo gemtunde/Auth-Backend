@@ -50,7 +50,13 @@ export class AuthController {
       });
       const { loginUser, refreshToken, accessToken, mfaRequired } =
         await this.authService.login(body);
-
+      if (mfaRequired) {
+        return res.status(HTTPSTATUS.OK).json({
+          message: "Verify MFA Authentication",
+          mfaRequired,
+          loginUser,
+        });
+      }
       return setAuthenticationCookies({
         res,
         refreshToken,

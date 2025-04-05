@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema } from "mongoose";
 import { compareValue, hashValue } from "../../common/utils/bcrypt";
 
-interface UserPreference {
+interface UserPreferences {
   enable2FA: boolean;
   emailNotifications: boolean;
   twoFactorSecret?: string;
@@ -13,11 +13,11 @@ export interface UserDocument extends Document {
   isEmailVerified: boolean;
   createdAt: Date;
   updatedAt: Date;
-  userPreference: UserPreference;
+  userPreferences: UserPreferences;
   comparePassword: (password: string) => Promise<boolean>;
 }
 
-const userPreferenceSchema = new Schema<UserPreference>({
+const userPreferenceSchema = new Schema<UserPreferences>({
   enable2FA: { type: Boolean, default: false },
   emailNotifications: { type: Boolean, default: true },
   twoFactorSecret: { type: String, required: false },
@@ -29,7 +29,7 @@ const userSchema = new Schema<UserDocument>(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     isEmailVerified: { type: Boolean, default: false },
-    userPreference: {
+    userPreferences: {
       type: userPreferenceSchema,
       default: {},
     },
