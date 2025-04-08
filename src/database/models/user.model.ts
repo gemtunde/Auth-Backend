@@ -55,7 +55,7 @@ userSchema.methods.comparePassword = async function (value: string) {
 userSchema.set("toJSON", {
   transform: function (doc, ret) {
     delete ret.password;
-    delete ret.userPreference.twoFactorSecret;
+    delete ret.userPreferences.twoFactorSecret;
     return ret;
   },
 });
